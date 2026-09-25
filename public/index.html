@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <title>Caja — Punto de venta</title>
+  <meta name="theme-color" content="#12100E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Caja">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.svg">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/app.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="appbar-brand">
+    <span class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9h18l-1.5 10.5a2 2 0 0 1-2 1.5H6.5a2 2 0 0 1-2-1.5L3 9Z"/>
+        <path d="M8 9V6a4 4 0 0 1 8 0v3"/>
+      </svg>
+    </span>
+    <span class="appbar-titles">
+      <b>Mi Kiosco</b>
+      <small id="appbarSub">Caja 01 · <span id="clock">--:--</span></small>
+    </span>
+  </div>
+  <div class="appbar-right">
+    <button type="button" class="conn-pill" id="connPill" hidden></button>
+    <span class="today-pill" id="todayPill" title="Vendido hoy">
+      <small>Hoy</small>
+      <b class="mono" id="todayTotal">$0</b>
+    </span>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ══════════ VENDER ══════════ -->
+  <section class="view" id="view-vender" data-view="vender">
+    <div class="sticky-tools">
+      <div class="search-row">
+        <input type="search" id="searchInput" placeholder="Buscar producto..." autocomplete="off" aria-label="Buscar producto">
+        <button type="button" class="icon-btn" id="quickScanBtn" aria-label="Escanear con la cámara">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <path d="M7 12h10"/>
+          </svg>
+        </button>
+      </div>
+      <div class="chips" id="catChips" role="tablist"></div>
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+    <p class="empty-note" id="gridEmpty" hidden>No hay productos que coincidan con la búsqueda.</p>
+  </section>
+
+  <!-- ══════════ ESCANEAR ══════════ -->
+  <section class="view" id="view-escanear" data-view="escanear" hidden>
+    <div class="scan-modes" id="scanModes">
+      <button type="button" data-mode="vender" aria-pressed="true">Cargar al ticket</button>
+      <button type="button" data-mode="alta" aria-pressed="false">Alta de producto</button>
+    </div>
+
+    <div class="scanner-stage">
+      <div class="cam-box" id="camBox">
+        <video id="camVideo" playsinline muted autoplay></video>
+        <div class="cam-overlay" aria-hidden="true">
+          <div class="reticle"><span></span><span></span><span></span><span></span></div>
+          <div class="laser"></div>
+        </div>
+        <div class="cam-placeholder" id="camPlaceholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <rect x="2" y="6" width="20" height="13" rx="2"/>
+            <path d="M6 10v5M9 10v5M12 10v5M15 10v5M18 10v5"/>
+          </svg>
+          <p>Activá la cámara y apuntá al código de barras del producto.</p>
+        </div>
+      </div>
+      <button type="button" class="btn primary big" id="camToggleBtn">Activar cámara</button>
+      <p class="scan-hint" id="scanHint">Funciona con la cámara del celular. También podés usar una pistola lectora con el campo de abajo enfocado.</p>
+
+      <div class="manual-row">
+        <input type="text" id="manualCode" inputmode="numeric" placeholder="Código de barras" autocomplete="off" class="mono">
+        <button type="button" class="btn ghost" id="manualBtn">Buscar</button>
+      </div>
+
+      <div id="scanPanel"></div>
+    </div>
+  </section>
+
+  <!-- ══════════ REPORTES ══════════ -->
+  <section class="view" id="view-reportes" data-view="reportes" hidden>
+    <div class="chips range-chips" id="rangeChips">
+      <button type="button" data-days="1">Hoy</button>
+      <button type="button" data-days="7" aria-pressed="true">7 días</button>
+      <button type="button" data-days="30">30 días</button>
+      <button type="button" data-days="">Todo</button>
+    </div>
+
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <article class="card">
+      <header class="card-head">
+        <h2>Evolución de ventas</h2>
+        <span class="card-sub" id="trendSub"></span>
+      </header>
+      <div class="chart-box"><canvas id="dayChart"></canvas></div>
+    </article>
+
+    <article class="card">
+      <header class="card-head">
+        <h2>Lo que más se vende</h2>
+        <span class="card-sub">Por facturación</span>
+      </header>
+      <div class="chart-box"><canvas id="topChart"></canvas></div>
+    </article>
+
+    <div class="card-duo">
+      <article class="card">
+        <header class="card-head"><h2>Por rubro</h2></header>
+        <div class="chart-box small"><canvas id="catChart"></canvas></div>
+      </article>
+      <article class="card">
+        <header class="card-head"><h2>Cómo te pagan</h2></header>
+        <div class="chart-box small"><canvas id="methodChart"></canvas></div>
+      </article>
+    </div>
+
+    <article class="card">
+      <header class="card-head">
+        <h2>Horarios fuertes</h2>
+        <span class="card-sub">Facturación por hora</span>
+      </header>
+      <div class="chart-box small"><canvas id="hourChart"></canvas></div>
+    </article>
+
+    <article class="card">
+      <header class="card-head">
+        <h2>Lo que no rota</h2>
+        <span class="card-sub">Candidatos a promo o a no reponer</span>
+      </header>
+      <ul class="rot-list" id="rotList"></ul>
+    </article>
+  </section>
+
+  <!-- ══════════ ASISTENTE ══════════ -->
+  <section class="view" id="view-asistente" data-view="asistente" hidden>
+    <div class="chat-wrap">
+      <div class="chat-log" id="chatLog"></div>
+      <div class="suggestions" id="suggestions">
+        <button type="button">¿Cómo vengo esta semana?</button>
+        <button type="button">¿Qué producto me deja más plata?</button>
+        <button type="button">¿A qué hora vendo más?</button>
+        <button type="button">¿Qué debería dejar de reponer?</button>
+      </div>
+      <form class="chat-form" id="chatForm">
+        <input type="text" id="chatInput" placeholder="Preguntale a tus ventas..." autocomplete="off">
+        <button type="submit" id="chatSend" aria-label="Enviar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m5 12 14-7-7 14-1.5-5.5L5 12Z"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<!-- Barra flotante del carrito -->
+<button type="button" class="cart-bar" id="cartBar" hidden>
+  <span class="cart-count" id="cartCount">0</span>
+  <span class="cart-label">Ver ticket</span>
+  <span class="cart-total mono" id="cartTotal">$0</span>
+</button>
+
+<!-- Tabs -->
+<nav class="tabbar" id="tabbar">
+  <button type="button" data-tab="vender" aria-pressed="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 10.5a2 2 0 0 1-2 1.5H6.5a2 2 0 0 1-2-1.5L3 9Z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg>
+    <span>Vender</span>
+  </button>
+  <button type="button" data-tab="escanear">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>
+    <span>Escanear</span>
+  </button>
+  <button type="button" data-tab="reportes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+    <span>Reportes</span>
+  </button>
+  <button type="button" data-tab="asistente">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-4.6A8.4 8.4 0 1 1 21 11.5Z"/></svg>
+    <span>Asistente</span>
+  </button>
+</nav>
+
+<div id="sheetRoot"></div>
+<div class="toast-stack" id="toastStack"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

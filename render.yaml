@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: caja-pos
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      # Los valores se cargan desde el panel de Render, nunca en el repositorio.
+      - key: AIRTABLE_TOKEN
+        sync: false
+      - key: AIRTABLE_BASE_ID
+        sync: false
+      - key: AIRTABLE_PRODUCTOS_TABLE_ID
+        sync: false
+      - key: AIRTABLE_VENTAS_TABLE_ID
+        sync: false
+      - key: AIRTABLE_VENTAITEMS_TABLE_ID
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false

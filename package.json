@@ -1,0 +1,19 @@
+{
+  "name": "pos-app",
+  "version": "1.0.0",
+  "description": "Demo de punto de venta con backend Express + SQLite",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.12.0"
+  }
+}
