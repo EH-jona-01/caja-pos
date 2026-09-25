@@ -19,7 +19,7 @@
 
   // ═══════════ Utilidades ═══════════
   function money(n) {
-    return "$" + Math.round(n || 0).toLocaleString("es-AR");
+    return "$" + Math.round(n || 0).toLocaleString("es-MX");
   }
   function el(id) { return document.getElementById(id); }
   function esc(s) {
@@ -112,7 +112,7 @@
   function categories() {
     var out = [], seen = {};
     state.products.forEach(function (p) {
-      var c = p.category || "Sin rubro";
+      var c = p.category || "Sin categoría";
       if (!seen[c]) { seen[c] = 1; out.push(c); }
     });
     return out.sort();
@@ -142,7 +142,7 @@
 
   function visibleProducts() {
     return state.products.filter(function (p) {
-      var catOk = state.activeCat === "Todos" || (p.category || "Sin rubro") === state.activeCat;
+      var catOk = state.activeCat === "Todos" || (p.category || "Sin categoría") === state.activeCat;
       if (!catOk) return false;
       if (!state.search) return true;
       return (p.name || "").toLowerCase().indexOf(state.search) !== -1 ||
@@ -233,7 +233,7 @@
   var PAY_ICONS = {
     Efectivo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>',
     Tarjeta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
-    QR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 19h2v2h-2z"/></svg>',
+    Transferencia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16l-3-3M20 16H4l3 3"/></svg>',
   };
 
   function openCartSheet() {
@@ -244,7 +244,7 @@
       '<div class="cart-lines" id="cartLines"></div>' +
       '<div class="totals" id="cartTotals"></div>' +
       '<div class="pay-methods" id="payMethods">' +
-      ["Efectivo", "Tarjeta", "QR"].map(function (m) {
+      ["Efectivo", "Tarjeta", "Transferencia"].map(function (m) {
         return '<button type="button" data-method="' + m + '" aria-pressed="' +
           (state.method === m ? "true" : "false") + '">' + PAY_ICONS[m] + "<span>" + m + "</span></button>";
       }).join("") +
@@ -311,11 +311,11 @@
     }).join("");
 
     var total = cartTotal();
-    var neto = Math.round(total / 1.21);
+    var neto = Math.round(total / 1.16);
     el("sheetSub").textContent = cartCount() + (cartCount() === 1 ? " ítem" : " ítems");
     el("cartTotals").innerHTML =
       '<div class="trow"><span>Neto</span><span class="mono">' + money(neto) + "</span></div>" +
-      '<div class="trow"><span>IVA 21% (incluido)</span><span class="mono">' + money(total - neto) + "</span></div>" +
+      '<div class="trow"><span>IVA 16% (incluido)</span><span class="mono">' + money(total - neto) + "</span></div>" +
       '<div class="trow grand"><span>Total</span><span class="mono">' + money(total) + "</span></div>";
 
     renderCashBox();
@@ -380,7 +380,7 @@
     btn.textContent = "Cobrando...";
 
     var total = cartTotal();
-    var neto = Math.round(total / 1.21);
+    var neto = Math.round(total / 1.16);
 
     try {
       var resp = await fetch("/api/sales", {
@@ -450,12 +450,12 @@
       '<div class="tp-line tp-muted"><span>' +
       (sale.offline ? "Ticket pendiente" : "Ticket #" + String(sale.id).padStart(4, "0")) +
       "</span><span>" +
-      ts.toLocaleDateString("es-AR") + " " + ts.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) + "</span></div>" +
+      ts.toLocaleDateString("es-MX") + " " + ts.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) + "</span></div>" +
       sale.items.map(function (i) {
         return '<div class="tp-line"><span>' + i.qty + "× " + esc(i.name) + "</span><span>" + money(i.lineTotal) + "</span></div>";
       }).join("") +
       '<div class="tp-line tp-muted" style="margin-top:7px"><span>Neto</span><span>' + money(sale.subtotal) + "</span></div>" +
-      '<div class="tp-line tp-muted"><span>IVA 21%</span><span>' + money(sale.iva) + "</span></div>" +
+      '<div class="tp-line tp-muted"><span>IVA 16%</span><span>' + money(sale.iva) + "</span></div>" +
       '<div class="tp-line total"><span>Total</span><span>' + money(sale.total) + "</span></div>" +
       "</div>" +
       '<button type="button" class="btn mint big" id="newSale">Nueva venta</button>' +
@@ -601,7 +601,7 @@
     el("camBox").classList.add("live");
     btn.disabled = false;
     btn.textContent = "Apagar cámara";
-    el("scanHint").textContent = "Apuntá al código de barras. Se carga solo al detectarlo.";
+    el("scanHint").textContent = "Apunta al código de barras. Se carga solo al detectarlo.";
     state.cam.running = true;
 
     if (state.cam.decoder.kind === "native") {
@@ -799,14 +799,14 @@
       '<div class="field"><label for="npName">Nombre</label>' +
       '<input type="text" id="npName" placeholder="Ej: Chocolate 100g" value="' + esc(info.name || "") + '"></div>' +
       '<div class="field-row">' +
-      '<div class="field"><label for="npCat">Rubro</label><select id="npCat">' +
+      '<div class="field"><label for="npCat">Categoría</label><select id="npCat">' +
       cats.map(function (c) {
         return '<option value="' + esc(c) + '"' + (c === suggestedCat ? " selected" : "") + ">" + esc(c) + "</option>";
       }).join("") +
-      '<option value="__new__">+ Nuevo rubro</option></select></div>' +
+      '<option value="__new__">+ Nueva categoría</option></select></div>' +
       '<div class="field"><label for="npPrice">Precio</label><input type="number" id="npPrice" class="mono" inputmode="numeric" placeholder="0" min="1" step="50"></div>' +
       "</div>" +
-      '<div class="field" id="npNewCatWrap" hidden><label for="npNewCat">Nombre del rubro</label><input type="text" id="npNewCat"></div>' +
+      '<div class="field" id="npNewCatWrap" hidden><label for="npNewCat">Nombre de la categoría</label><input type="text" id="npNewCat"></div>' +
       "</div>" +
       '<button type="button" class="btn primary big" id="npSave">Guardar y cargar al ticket</button>' +
       "</div>";
@@ -826,7 +826,7 @@
       var category = catSel === "__new__" ? el("npNewCat").value.trim() : catSel;
 
       if (!name) { toast("Falta el nombre", "err"); el("npName").focus(); return; }
-      if (!category) { toast("Falta el rubro", "err"); return; }
+      if (!category) { toast("Falta la categoría", "err"); return; }
       if (!price || price <= 0) { toast("Falta el precio", "err"); el("npPrice").focus(); return; }
 
       this.disabled = true;
@@ -1252,13 +1252,13 @@
 
     el("todayTotal").textContent = money(total);
     el("appbarSub").innerHTML = "Caja 01 · " + tickets + " tickets · <span id=\"clock\">" +
-      new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) + "</span>";
+      new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) + "</span>";
     renderConnState();
   }
 
   function tickClock() {
     var c = el("clock");
-    if (c) c.textContent = new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    if (c) c.textContent = new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
   }
 
   addMsg("bot", "Soy tu asistente. Miro todas tus ventas y te contesto en criollo.\nProbá con una de las preguntas de abajo.");

@@ -196,7 +196,7 @@ async function createSale({ items, method, received }) {
 
   // Los precios del catálogo son finales: el IVA va discriminado hacia adentro.
   const total = lines.reduce((sum, l) => sum + l.lineTotal, 0);
-  const subtotal = Math.round(total / 1.21);
+  const subtotal = Math.round(total / 1.16);
   const iva = total - subtotal;
   const receivedAmount = method === "Efectivo" ? Number(received) || 0 : total;
 

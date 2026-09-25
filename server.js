@@ -143,7 +143,7 @@ app.post("/api/sales", async (req, res) => {
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: "El ticket no tiene items." });
   }
-  if (!["Efectivo", "Tarjeta", "QR"].includes(method)) {
+  if (!["Efectivo", "Tarjeta", "Transferencia"].includes(method)) {
     return res.status(400).json({ error: "Medio de pago inválido." });
   }
 

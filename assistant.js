@@ -4,7 +4,7 @@ const analytics = require("./analytics");
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
 
 function money(n) {
-  return "$" + Math.round(n).toLocaleString("es-AR");
+  return "$" + Math.round(n).toLocaleString("es-MX");
 }
 
 async function buildContext() {
@@ -24,11 +24,11 @@ async function buildContext() {
   const ventasHoy = data.byDay.find((d) => d.date === hoy) || { total: 0, tickets: 0 };
 
   const lines = [];
-  lines.push("Sos el asistente de datos de un kiosco/almacén que usa este punto de venta.");
-  lines.push("Respondé en español rioplatense, corto y concreto, basándote SOLO en los datos de abajo.");
-  lines.push("Si te preguntan algo que estos datos no permiten responder, decilo en vez de inventar.");
-  lines.push("Usá números y nombres puntuales. No uses tablas markdown, el chat es angosto.");
-  lines.push("Cuando detectes algo accionable (un producto que no rota, un horario flojo, un rubro fuerte), decilo.");
+  lines.push("Eres el asistente de datos de una tienda de abarrotes que usa este punto de venta.");
+  lines.push("Responde en español mexicano, corto y concreto, basándote SOLO en los datos de abajo.");
+  lines.push("Si te preguntan algo que estos datos no permiten responder, dilo en vez de inventar.");
+  lines.push("Usa números y nombres puntuales. No uses tablas markdown, el chat es angosto.");
+  lines.push("Cuando detectes algo accionable (un producto que no rota, un horario flojo, una categoría fuerte), dilo.");
   lines.push("");
   lines.push(`FECHA DE HOY: ${hoy}`);
   lines.push("");
@@ -140,8 +140,8 @@ async function classifyProduct(name, rubros) {
         model: MODEL,
         max_tokens: 20,
         system:
-          "Clasificás productos de kiosco/almacén. Respondé únicamente con uno de los rubros " +
-          "de la lista, exactamente como está escrito, sin explicaciones ni puntuación.",
+          "Clasificas productos de una tienda de abarrotes. Responde únicamente con una de las " +
+          "categorías de la lista, exactamente como está escrita, sin explicaciones ni puntuación.",
         messages: [
           {
             role: "user",
